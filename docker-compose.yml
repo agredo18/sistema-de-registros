@@ -1,0 +1,60 @@
+services:
+
+  # ─── Base de datos PostgreSQL ─────────────────────────────────────────────
+  #  Aloja dos bases: 'porteria' (datos del backend) y 'erp_sena' (mock del ERP).
+  #  El script db/init/01_erp_sena.sql crea erp_sena la primera vez.
+  db:
+    image: postgres:16-alpine
+    container_name: sena_yamboro_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sena_user
+      POSTGRES_PASSWORD: sena_pass
+      POSTGRES_DB: porteria
+    volumes:
+      - pg_porteria_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      # 5432/5433/5434 del host están ocupados por otras BDs; usamos 5435 hacia afuera.
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sena_user -d porteria"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend FastAPI (control de equipos/portería + login) ─────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sena_yamboro_backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: sena_user
+      DB_PASSWORD: sena_pass
+      DB_NAME: porteria
+      SECRET_KEY: cambia_esta_clave_secreta_en_produccion
+      # NEST_API_URL queda sin definir: se usa el fallback a erp_sena (Postgres).
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ─── Frontend React (Vite + MUI, servido con nginx) ────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sena_yamboro_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pg_porteria_data:
