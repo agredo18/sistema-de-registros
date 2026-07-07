@@ -4,8 +4,8 @@ Sistema para controlar el **ingreso/salida de personas y equipos** (portátiles,
 en la portería del SENA Yamboro, con **código QR** por persona, dashboard y reportes.
 
 Estado actual del repositorio:
-- ✅ **Backend** en Python/FastAPI (con **login** JWT) — listo y dockerizado.
-- 🕐 **Frontend** en **React** — pendiente de construir (ver [PROMPT-recrear-react-python.md](PROMPT-recrear-react-python.md)).
+ **Backend** en Python/FastAPI (con **login** JWT) — listo y dockerizado.
+ **Frontend** en **React** .
 
 ---
 
@@ -83,7 +83,4 @@ contraseña `sena_pass`.
 
 ---
 
-## Siguiente paso
 
-Construir el **frontend en React** siguiendo [PROMPT-recrear-react-python.md](PROMPT-recrear-react-python.md).
-Cuando exista la carpeta `frontend/`, descomentar el servicio `frontend` en `docker-compose.yml`.
